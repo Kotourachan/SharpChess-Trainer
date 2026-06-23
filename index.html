@@ -674,6 +674,158 @@
     opacity: 0.6;
   }
 
+  /* ── Blindfold mode ── */
+  #mode-toggle {
+    width: 220px;
+  }
+  #mode-toggle-thumb {
+    width: 70px;
+  }
+  #mode-toggle.late #mode-toggle-thumb {
+    transform: translateX(75px);
+  }
+  #mode-toggle.blindfold #mode-toggle-thumb {
+    transform: translateX(148px);
+  }
+  #mode-toggle.blindfold .toggle-label-early,
+  #mode-toggle.blindfold .toggle-label-late { color: var(--muted); }
+  #mode-toggle.blindfold .toggle-label-blindfold { color: #1a1200; }
+  #mode-toggle.late .toggle-label-blindfold { color: var(--muted); }
+  .toggle-label-blindfold { color: var(--muted); }
+
+  #board-blindfold-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #1a1a1a;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 6;
+    border-radius: 2px;
+    border: 3px solid var(--border);
+  }
+  #board-blindfold-overlay.active { display: flex; }
+  #board-blindfold-overlay .blindfold-icon {
+    font-size: 3rem;
+    opacity: 0.15;
+  }
+  #board-blindfold-overlay .blindfold-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-top: 8px;
+    opacity: 0.4;
+  }
+
+  /* Blindfold input panel — lives under the board */
+  #blindfold-panel {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    width: min(480px, 90vw);
+    margin-top: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  #blindfold-panel.visible { display: flex; }
+
+  .bf-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bf-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    min-width: 36px;
+    flex-shrink: 0;
+  }
+
+  .bf-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .bf-btn {
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    transition: background 0.1s, border-color 0.1s, color 0.1s;
+    min-width: 32px;
+    text-align: center;
+  }
+  .bf-btn:hover { background: var(--border); }
+  .bf-btn.selected {
+    background: var(--accent);
+    color: #1a1200;
+    border-color: var(--accent);
+  }
+
+  .bf-speech-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  #bf-speak-btn, #bf-replay-btn {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    transition: background 0.15s, color 0.15s;
+  }
+  #bf-speak-btn:hover, #bf-replay-btn:hover { background: var(--border); color: var(--text); }
+  #bf-speak-btn.speaking { border-color: var(--accent); color: var(--accent); }
+
+  .bf-submit-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+  }
+
+  .bf-move-preview {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    min-width: 80px;
+  }
+
+  #bf-submit {
+    padding: 8px 20px;
+    border-radius: 5px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: var(--accent);
+    color: #1a1200;
+    transition: opacity 0.15s;
+  }
+  #bf-submit:disabled { opacity: 0.35; cursor: not-allowed; }
+  #bf-submit:not(:disabled):hover { opacity: 0.85; }
+
+
   /* ── Rank display in player card ── */
   #player-rank-emblem {
     display: flex;
@@ -787,8 +939,9 @@
     <button id="mode-toggle" title="Switch game phase">
       <div id="mode-toggle-thumb"></div>
       <div id="mode-toggle-labels">
-        <span class="toggle-label toggle-label-early">Early Game</span>
-        <span class="toggle-label toggle-label-late">Late Game</span>
+        <span class="toggle-label toggle-label-early">Early</span>
+        <span class="toggle-label toggle-label-late">Late</span>
+        <span class="toggle-label toggle-label-blindfold">Blind</span>
       </div>
     </button>
   </div>
@@ -815,7 +968,15 @@
 <!-- Trainer (hidden until loaded) -->
 <div id="main" style="display:none">
   <div id="board-wrap">
+    <div id="board-and-veil" style="position:relative;display:inline-block;line-height:0">
     <div id="board"></div>
+    <div id="board-blindfold-overlay">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <span class="blindfold-icon">👁️</span>
+        <span class="blindfold-label">Blindfold Mode</span>
+      </div>
+    </div>
+    </div>
     <div id="sf-status">Loading Stockfish...</div>
     <div id="below-board">
       <button class="board-btn" id="btn-give-up" disabled>Give Up</button>
@@ -824,6 +985,57 @@
       <span style="font-size:0.72rem;color:var(--muted);font-family:'JetBrains Mono',monospace">⤢</span>
       <input type="range" id="board-size-slider" min="200" max="700" value="480" style="flex:1">
       <span style="font-size:0.72rem;color:var(--muted);font-family:'JetBrains Mono',monospace">⤡</span>
+    </div>
+    <div id="blindfold-panel">
+      <!-- Speech row -->
+      <div class="bf-speech-row">
+        <button id="bf-speak-btn">🔊 Read Position</button>
+        <button id="bf-replay-btn">↺ Replay</button>
+      </div>
+      <div class="bf-row" style="align-items:center;gap:8px;margin-top:2px">
+        <span class="bf-label" style="min-width:52px">Pause</span>
+        <input type="range" id="bf-pause-slider" min="0" max="3000" step="250" value="800"
+          style="flex:1;accent-color:var(--accent);cursor:pointer">
+        <span id="bf-pause-val" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);min-width:36px;text-align:right">0.8s</span>
+      </div>
+      <!-- Piece selector -->
+      <div class="bf-row">
+        <div class="bf-label">Piece</div>
+        <div class="bf-selector" id="bf-piece-sel"></div>
+      </div>
+      <!-- File selector -->
+      <div class="bf-row">
+        <div class="bf-label">File</div>
+        <div class="bf-selector" id="bf-file-sel">
+          <button class="bf-btn" data-val="a">a</button>
+          <button class="bf-btn" data-val="b">b</button>
+          <button class="bf-btn" data-val="c">c</button>
+          <button class="bf-btn" data-val="d">d</button>
+          <button class="bf-btn" data-val="e">e</button>
+          <button class="bf-btn" data-val="f">f</button>
+          <button class="bf-btn" data-val="g">g</button>
+          <button class="bf-btn" data-val="h">h</button>
+        </div>
+      </div>
+      <!-- Rank selector -->
+      <div class="bf-row">
+        <div class="bf-label">Rank</div>
+        <div class="bf-selector" id="bf-rank-sel">
+          <button class="bf-btn" data-val="1">1</button>
+          <button class="bf-btn" data-val="2">2</button>
+          <button class="bf-btn" data-val="3">3</button>
+          <button class="bf-btn" data-val="4">4</button>
+          <button class="bf-btn" data-val="5">5</button>
+          <button class="bf-btn" data-val="6">6</button>
+          <button class="bf-btn" data-val="7">7</button>
+          <button class="bf-btn" data-val="8">8</button>
+        </div>
+      </div>
+      <!-- Submit row -->
+      <div class="bf-submit-row">
+        <span class="bf-move-preview" id="bf-selected-move">—</span>
+        <button id="bf-submit" disabled>Submit</button>
+      </div>
     </div>
     <div id="overlay">
       <div id="overlay-icon"></div>
@@ -1182,17 +1394,25 @@ function switchMode(mode) {
   if (mode === gameMode) return;
   gameMode = mode;
   const btn = document.getElementById('mode-toggle');
-  if (mode === 'late') btn.classList.add('late');
-  else btn.classList.remove('late');
+  btn.classList.remove('late', 'blindfold');
+  if (mode === 'late')      btn.classList.add('late');
+  if (mode === 'blindfold') btn.classList.add('blindfold');
   // Update label
   const lbl = document.getElementById('mode-label');
-  if (lbl) lbl.textContent = mode === 'early' ? '(Early Game)' : '(Late Game)';
+  if (lbl) lbl.textContent = mode === 'early' ? '(Early Game)' : mode === 'late' ? '(Late Game)' : '(Blindfold)';
   // Reset in-session stats
   statsCorrect = 0; statsWrong = 0;
-  // statsDone is all-time — not reset on mode switch
+  // Load this mode's own rating + rank
   loadPlayerRating();
   updatePlayerRatingDisplay();
   updateRankDisplay();
+
+  if (mode === 'blindfold') {
+    // Puzzle loading handled by enterBlindMode
+    loadSeen();
+    updateStats();
+    return;
+  }
 
   if (mode === 'early') {
     allPositions = EARLY_PUZZLE_DATA;
@@ -1469,6 +1689,10 @@ function updateSrs(id, gotCorrect, firstAttempt) {
 
 // ── Board rendering ──────────────────────────────────────────
 function renderBoard(state) {
+  if (blindfoldMode) {
+    renderGhostBoardPieces(state);
+    return;
+  }
   const boardEl = document.getElementById('board');
   boardEl.innerHTML = '';
   const files = 'abcdefgh';
@@ -2028,8 +2252,16 @@ document.getElementById('btn-next').addEventListener('click', () => {
   hideOverlay();
   document.getElementById('board').className = '';
   document.getElementById('btn-next').style.display = 'none';
-  const puzzle = pickPuzzle();
-  if (puzzle) loadPuzzle(puzzle);
+  if (blindfoldMode) {
+    const puzzle = pickBlindPuzzle();
+    blindSeenIds.add(puzzle.game_id);
+    loadPuzzle(puzzle);
+    resetBfSelections();
+    buildPieceSelector(currentState);
+  } else {
+    const puzzle = pickPuzzle();
+    if (puzzle) loadPuzzle(puzzle);
+  }
 });
 
 // ── Board resize slider ───────────────────────────────────────
@@ -2038,14 +2270,15 @@ document.getElementById('board-size-slider').addEventListener('input', function(
   const board = document.getElementById('board');
   board.style.width  = px;
   board.style.height = px;
+  const veil = document.getElementById('board-and-veil');
+  if (veil) { veil.style.width = px; veil.style.height = px; }
   document.getElementById('below-board').style.width = px;
   document.getElementById('resize-row').style.width  = px;
+  const bfPanel = document.getElementById('blindfold-panel');
+  if (bfPanel) bfPanel.style.width = px;
 });
 
-// ── Mode toggle ───────────────────────────────────────────────
-document.getElementById('mode-toggle').addEventListener('click', () => {
-  switchMode(gameMode === 'early' ? 'late' : 'early');
-});
+// ── Mode toggle (replaced by 3-state handler below) ──────────────────────────
 
 
 // ── Init ─────────────────────────────────────────────────────
@@ -2105,6 +2338,1833 @@ document.getElementById('difficulty-select').addEventListener('change', function
   document.getElementById('board').classList.remove('glow-correct', 'glow-wrong');
   const puzzle = pickPuzzle();
   if (puzzle) loadPuzzle(puzzle);
+});
+
+// ── Blindfold Mode ────────────────────────────────────────────────────────────
+
+let blindfoldMode = false;
+let bfSelectedPiece = null; // e.g. 'K', 'N', etc. (uppercase)
+let bfSelectedFile = null;  // 'a'-'h'
+let bfSelectedRank = null;  // '1'-'8'
+
+// Piece name maps for TTS
+const PIECE_NAMES = { K:'King', Q:'Queen', R:'Rook', B:'Bishop', N:'Knight', P:'Pawn' };
+const FILE_NAMES  = { a:'A', b:'B', c:'C', d:'D', e:'E', f:'F', g:'G', h:'H' };
+
+// ── Speech synthesis ──────────────────────────────────────────
+// ── Speech synthesis ──────────────────────────────────────────
+let bfPauseMs = 800; // default pause between pieces
+
+// Update pause label when slider moves
+document.addEventListener('DOMContentLoaded', () => {
+  const slider = document.getElementById('bf-pause-slider');
+  if (slider) {
+    slider.addEventListener('input', () => {
+      bfPauseMs = parseInt(slider.value);
+      const label = document.getElementById('bf-pause-val');
+      if (label) label.textContent = (bfPauseMs / 1000).toFixed(2).replace(/\.?0+$/, '') + 's';
+    });
+  }
+});
+
+// Also wire it up after the panel exists (since DOMContentLoaded may already have fired)
+function initPauseSlider() {
+  const slider = document.getElementById('bf-pause-slider');
+  if (!slider || slider._bfInited) return;
+  slider._bfInited = true;
+  slider.addEventListener('input', () => {
+    bfPauseMs = parseInt(slider.value);
+    const label = document.getElementById('bf-pause-val');
+    if (label) label.textContent = (bfPauseMs / 1000).toFixed(2).replace(/\.?0+$/, '') + 's';
+  });
+}
+
+// Speak a simple one-shot utterance (for error messages etc.)
+function speakText(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.85;
+  utt.pitch = 1;
+  const speakBtn = document.getElementById('bf-speak-btn');
+  if (speakBtn) speakBtn.classList.add('speaking');
+  utt.onend = () => { if (speakBtn) speakBtn.classList.remove('speaking'); };
+  window.speechSynthesis.speak(utt);
+}
+
+// Speak the position piece by piece with a configurable pause between each
+function speakPosition(state) {
+  if (!window.speechSynthesis) return;
+  initPauseSlider();
+
+  // Cancel anything playing and wait a tick before starting fresh
+  // (avoids Chrome glitch where cancel() + immediate speak() misfires)
+  window.speechSynthesis.cancel();
+
+  const fileNames = { a:'A', b:'B', c:'C', d:'D', e:'E', f:'F', g:'G', h:'H' };
+  const files = 'abcdefgh';
+  const side = state.turn === 'w' ? 'White' : 'Black';
+
+  const whitePieces = [], blackPieces = [];
+  for (let r = 0; r < 8; r++) {
+    for (let f = 0; f < 8; f++) {
+      const p = state.board[r][f];
+      if (!p) continue;
+      const isWhite = p === p.toUpperCase();
+      const name = PIECE_NAMES[p.toUpperCase()] || p;
+      const sq = `${fileNames[files[f]]} ${8 - r}`;
+      const phrase = `${name} on ${sq}`;
+      if (isWhite) whitePieces.push(phrase);
+      else         blackPieces.push(phrase);
+    }
+  }
+
+  const phrases = ['White has', ...whitePieces, 'Black has', ...blackPieces, `${side} to move`];
+
+  const speakBtn = document.getElementById('bf-speak-btn');
+  if (speakBtn) speakBtn.classList.add('speaking');
+
+  let cancelled = false;
+
+  // Store a cancel handle so a new call can stop an in-progress reading
+  if (window._bfSpeakCancel) window._bfSpeakCancel();
+  window._bfSpeakCancel = () => { cancelled = true; };
+
+  let i = 0;
+
+  function speakNext() {
+    if (cancelled || i >= phrases.length) {
+      if (!cancelled && speakBtn) speakBtn.classList.remove('speaking');
+      window._bfSpeakCancel = null;
+      return;
+    }
+
+    const utt = new SpeechSynthesisUtterance(phrases[i]);
+    utt.rate = 0.85;
+    utt.pitch = 1;
+
+    utt.onend = () => {
+      if (cancelled) return;
+      i++;
+      const delay = i < phrases.length ? bfPauseMs : 0;
+      if (delay > 0) {
+        // Chrome bug: synthesis can pause itself during a setTimeout gap.
+        // Call resume() just before speaking the next phrase.
+        setTimeout(() => {
+          if (cancelled) return;
+          window.speechSynthesis.resume();
+          speakNext();
+        }, delay);
+      } else {
+        speakNext();
+      }
+    };
+
+    utt.onerror = (e) => {
+      // 'interrupted' fires when cancel() was called — that's expected, ignore it
+      if (e.error === 'interrupted' || e.error === 'canceled') return;
+      if (speakBtn) speakBtn.classList.remove('speaking');
+    };
+
+    window.speechSynthesis.speak(utt);
+  }
+
+  // Small delay after cancel() before starting — prevents Chrome from eating first utterance
+  setTimeout(speakNext, 80);
+}
+
+function buildPositionText(state) {
+  const side = state.turn === 'w' ? 'White' : 'Black';
+  const files = 'abcdefgh';
+  const pieces = { white: [], black: [] };
+
+  for (let r = 0; r < 8; r++) {
+    for (let f = 0; f < 8; f++) {
+      const p = state.board[r][f];
+      if (!p) continue;
+      const isWhite = p === p.toUpperCase();
+      const name = PIECE_NAMES[p.toUpperCase()] || p;
+      const sq = `${FILE_NAMES[files[f]] || files[f]} ${8 - r}`;
+      if (isWhite) pieces.white.push(`${name} on ${sq}`);
+      else         pieces.black.push(`${name} on ${sq}`);
+    }
+  }
+
+  const listPieces = (arr) => arr.join(', ');
+  return `White has: ${listPieces(pieces.white)}. Black has: ${listPieces(pieces.black)}. ${side} to move.`;
+}
+
+// ── Blindfold piece selector (built dynamically from position) ──
+function buildPieceSelector(state) {
+  const sel = document.getElementById('bf-piece-sel');
+  sel.innerHTML = '';
+  const side = state.turn;
+  const seen = new Set();
+  const files = 'abcdefgh';
+  const order = ['K','Q','R','B','N','P'];
+
+  for (const code of order) {
+    // check if this piece type exists for current side
+    let found = false;
+    for (let r = 0; r < 8 && !found; r++) {
+      for (let f = 0; f < 8 && !found; f++) {
+        const p = state.board[r][f];
+        if (!p) continue;
+        const isW = p === p.toUpperCase();
+        if (side === 'w' && isW && p.toUpperCase() === code) found = true;
+        if (side === 'b' && !isW && p.toUpperCase() === code) found = true;
+      }
+    }
+    if (found) {
+      const btn = document.createElement('button');
+      btn.className = 'bf-btn';
+      btn.dataset.val = code;
+      btn.textContent = PIECE_NAMES[code];
+      btn.addEventListener('click', () => {
+        bfSelectedPiece = code;
+        document.querySelectorAll('#bf-piece-sel .bf-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        updateBfMoveDisplay();
+      });
+      sel.appendChild(btn);
+    }
+  }
+}
+
+function updateBfMoveDisplay() {
+  const el = document.getElementById('bf-selected-move');
+  const parts = [];
+  if (bfSelectedPiece) parts.push(PIECE_NAMES[bfSelectedPiece]);
+  if (bfSelectedFile) parts.push(bfSelectedFile);
+  if (bfSelectedRank) parts.push(bfSelectedRank);
+  el.textContent = parts.length ? parts.join('') : '—';
+
+  const submitBtn = document.getElementById('bf-submit');
+  // Enable submit only when we have file + rank (piece optional for pawn-style input but we require it)
+  submitBtn.disabled = !(bfSelectedPiece && bfSelectedFile && bfSelectedRank);
+}
+
+function resetBfSelections() {
+  bfSelectedPiece = null;
+  bfSelectedFile = null;
+  bfSelectedRank = null;
+  document.querySelectorAll('#bf-piece-sel .bf-btn, #bf-file-sel .bf-btn, #bf-rank-sel .bf-btn')
+    .forEach(b => b.classList.remove('selected'));
+  updateBfMoveDisplay();
+}
+
+// Wire up file/rank selectors (static)
+document.querySelectorAll('#bf-file-sel .bf-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    bfSelectedFile = btn.dataset.val;
+    document.querySelectorAll('#bf-file-sel .bf-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    updateBfMoveDisplay();
+  });
+});
+document.querySelectorAll('#bf-rank-sel .bf-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    bfSelectedRank = btn.dataset.val;
+    document.querySelectorAll('#bf-rank-sel .bf-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    updateBfMoveDisplay();
+  });
+});
+
+// Submit move from blindfold UI
+document.getElementById('bf-submit').addEventListener('click', () => {
+  if (!currentState || !puzzleActive) return;
+  if (!bfSelectedPiece || !bfSelectedFile || !bfSelectedRank) return;
+
+  // Find the piece on the board and resolve its current square
+  const side = currentState.turn;
+  const targetFile = 'abcdefgh'.indexOf(bfSelectedFile);
+  const targetRank = 8 - parseInt(bfSelectedRank); // board row index
+  const pieceCode = side === 'w' ? bfSelectedPiece : bfSelectedPiece.toLowerCase();
+
+  // Find all squares with this piece type on the current side
+  const sources = [];
+  for (let r = 0; r < 8; r++) {
+    for (let f = 0; f < 8; f++) {
+      const p = currentState.board[r][f];
+      if (!p) continue;
+      if (p.toUpperCase() === bfSelectedPiece) {
+        const isW = p === p.toUpperCase();
+        if ((side === 'w' && isW) || (side === 'b' && !isW)) {
+          // Check if this piece can legally move to target
+          const moves = getLegalMovesSimple(currentState, r, f);
+          if (moves.some(([mr, mf]) => mr === targetRank && mf === targetFile)) {
+            sources.push([r, f]);
+          }
+        }
+      }
+    }
+  }
+
+  if (sources.length === 0) {
+    speakText('Illegal move. Try again.');
+    return;
+  }
+
+  if (sources.length > 1) {
+    speakText('Ambiguous. More than one piece can go there. Please be more specific.');
+    return;
+  }
+
+  const [fr, fc] = sources[0];
+  const files = 'abcdefgh';
+  const uci = `${files[fc]}${8-fr}${bfSelectedFile}${bfSelectedRank}`;
+  resetBfSelections();
+  checkAnswer(uci);
+});
+
+document.getElementById('bf-speak-btn').addEventListener('click', () => {
+  if (!currentState) return;
+  speakPosition(currentState);
+});
+
+document.getElementById('bf-replay-btn').addEventListener('click', () => {
+  if (!currentState) return;
+  speakPosition(currentState);
+});
+
+
+// ── Blindfold test puzzle ─────────────────────────────────────
+// White: Na1, Ka2 | Black: Kh8, Qc2 | White to move: Nc2 (take queen)
+const BLIND_PUZZLES = [
+  {
+    "game_id": "l1_1",
+    "fen": "8/1k6/7B/8/5b2/8/8/7K w - - 0 1",
+    "best_move": "h6f4",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_2",
+    "fen": "1K4k1/3n4/8/2N5/8/8/8/8 w - - 0 1",
+    "best_move": "c5d7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_3",
+    "fen": "N7/7K/1r6/k7/8/8/8/8 w - - 0 1",
+    "best_move": "a8b6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_4",
+    "fen": "8/8/1r6/P7/8/8/1k1K4/8 w - - 0 1",
+    "best_move": "a5b6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_5",
+    "fen": "6b1/5P2/8/8/8/8/6K1/1k6 w - - 0 1",
+    "best_move": "f7g8q",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_6",
+    "fen": "8/7R/6b1/8/3K4/8/6k1/8 b - - 0 1",
+    "best_move": "g6h7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_7",
+    "fen": "8/1R6/8/5k2/8/1q3K2/8/8 w - - 0 1",
+    "best_move": "b7b3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_8",
+    "fen": "1k6/8/8/4K3/8/5n2/6Q1/8 w - - 0 1",
+    "best_move": "g2f3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_9",
+    "fen": "1K6/4p3/8/6B1/8/8/6k1/8 w - - 0 1",
+    "best_move": "g5e7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_10",
+    "fen": "8/3N3K/8/2q5/8/1k6/8/8 w - - 0 1",
+    "best_move": "d7c5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_11",
+    "fen": "2R5/8/8/8/8/2n5/4k3/K7 w - - 0 1",
+    "best_move": "c8c3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_12",
+    "fen": "Q7/r7/8/6K1/8/4k3/8/8 w - - 0 1",
+    "best_move": "a8a7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_13",
+    "fen": "8/8/1b2K3/2P5/8/8/8/7k b - - 0 1",
+    "best_move": "b6c5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_14",
+    "fen": "7R/8/8/7p/8/1K6/8/k7 w - - 0 1",
+    "best_move": "h8h5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_15",
+    "fen": "6n1/8/5N2/8/8/k2K4/8/8 b - - 0 1",
+    "best_move": "g8f6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_16",
+    "fen": "8/K7/8/4k3/8/8/8/2Q4q w - - 0 1",
+    "best_move": "c1h1",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_17",
+    "fen": "8/8/8/4pR2/8/3K4/8/k7 w - - 0 1",
+    "best_move": "f5e5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_18",
+    "fen": "8/8/8/r2Q4/k7/8/8/5K2 w - - 0 1",
+    "best_move": "d5a5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_19",
+    "fen": "8/8/2Q5/8/6K1/3k4/8/7b b - - 0 1",
+    "best_move": "h1c6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_20",
+    "fen": "8/8/8/5k2/8/6R1/K3n3/8 b - - 0 1",
+    "best_move": "e2g3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_21",
+    "fen": "8/K7/3R4/3q4/8/8/8/4k3 w - - 0 1",
+    "best_move": "d6d5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_22",
+    "fen": "1K6/8/1P6/8/3b4/8/8/3k4 b - - 0 1",
+    "best_move": "d4b6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_23",
+    "fen": "8/8/K4n2/4P3/8/3k4/8/8 w - - 0 1",
+    "best_move": "e5f6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_24",
+    "fen": "8/8/2n5/8/1N3K1k/8/8/8 w - - 0 1",
+    "best_move": "b4c6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_25",
+    "fen": "8/8/8/5p2/4N3/8/2K5/k7 b - - 0 1",
+    "best_move": "f5e4",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_26",
+    "fen": "8/8/8/K3b3/2k5/8/1R6/8 b - - 0 1",
+    "best_move": "e5b2",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_27",
+    "fen": "8/6b1/k7/4B3/8/8/6K1/8 w - - 0 1",
+    "best_move": "e5g7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_28",
+    "fen": "8/1k6/8/8/2N5/n7/8/5K2 w - - 0 1",
+    "best_move": "c4a3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_29",
+    "fen": "1q4K1/P7/8/8/8/8/5k2/8 w - - 0 1",
+    "best_move": "a7b8q",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_30",
+    "fen": "2Q5/6k1/q7/8/8/8/4K3/8 w - - 0 1",
+    "best_move": "c8a6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_31",
+    "fen": "8/4p3/1k1Q4/8/8/8/K7/8 b - - 0 1",
+    "best_move": "e7d6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_32",
+    "fen": "8/8/5R2/8/8/2K2p1k/8/8 w - - 0 1",
+    "best_move": "f6f3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_33",
+    "fen": "8/1q3Q2/8/8/8/3K4/6k1/8 w - - 0 1",
+    "best_move": "f7b7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_34",
+    "fen": "8/8/8/4k1K1/8/8/7p/6R1 b - - 0 1",
+    "best_move": "h2g1q",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_35",
+    "fen": "8/8/K7/8/8/2Nr4/8/6k1 b - - 0 1",
+    "best_move": "d3c3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_36",
+    "fen": "8/8/5p1K/4P3/5k2/8/8/8 b - - 0 1",
+    "best_move": "f6e5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_37",
+    "fen": "7K/5p2/6P1/1k6/8/8/8/8 w - - 0 1",
+    "best_move": "g6f7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_38",
+    "fen": "8/8/8/8/6p1/5Qk1/8/2K5 b - - 0 1",
+    "best_move": "g4f3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_39",
+    "fen": "1k6/5b2/8/8/8/8/3K4/5R2 w - - 0 1",
+    "best_move": "f1f7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_40",
+    "fen": "8/1R5r/8/8/3K4/8/8/7k w - - 0 1",
+    "best_move": "b7h7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_41",
+    "fen": "4q3/8/8/8/5k2/4Q3/8/3K4 b - - 0 1",
+    "best_move": "e8e3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_42",
+    "fen": "4B2k/5K2/5n2/8/8/8/8/8 b - - 0 1",
+    "best_move": "f6e8",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_43",
+    "fen": "k7/6K1/8/8/1N6/8/2n5/8 w - - 0 1",
+    "best_move": "b4c2",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_44",
+    "fen": "2K5/8/8/8/8/4r3/4k3/5N2 w - - 0 1",
+    "best_move": "f1e3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_45",
+    "fen": "8/8/6k1/8/8/K5b1/7Q/8 w - - 0 1",
+    "best_move": "h2g3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_46",
+    "fen": "1q6/8/8/8/8/1Q1k4/8/5K2 b - - 0 1",
+    "best_move": "b8b3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_47",
+    "fen": "1K6/7Q/8/6k1/8/8/8/1b6 w - - 0 1",
+    "best_move": "h7b1",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_48",
+    "fen": "2R1n3/8/8/8/8/4k3/1K6/8 w - - 0 1",
+    "best_move": "c8e8",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_49",
+    "fen": "8/8/2R5/5K2/8/2r5/8/1k6 w - - 0 1",
+    "best_move": "c6c3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_50",
+    "fen": "8/3K4/4R3/8/8/5k2/4p3/8 w - - 0 1",
+    "best_move": "e6e2",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_51",
+    "fen": "8/8/8/8/1R3p2/8/5K2/3k4 w - - 0 1",
+    "best_move": "b4f4",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_52",
+    "fen": "8/8/8/6P1/7K/2k5/6r1/8 b - - 0 1",
+    "best_move": "g2g5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_53",
+    "fen": "8/2r5/K7/4k3/8/8/8/2R5 b - - 0 1",
+    "best_move": "c7c1",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_54",
+    "fen": "8/8/5r2/8/5B2/8/6k1/4K3 b - - 0 1",
+    "best_move": "f6f4",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_55",
+    "fen": "8/7k/8/7B/8/8/8/3b1K2 b - - 0 1",
+    "best_move": "d1h5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_56",
+    "fen": "8/5kp1/7P/8/8/8/8/2K5 w - - 0 1",
+    "best_move": "h6g7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_57",
+    "fen": "r7/1B4k1/8/8/8/8/8/6K1 w - - 0 1",
+    "best_move": "b7a8",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_58",
+    "fen": "1r6/P2k4/8/1K6/8/8/8/8 w - - 0 1",
+    "best_move": "a7b8q",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_59",
+    "fen": "8/2p5/1B6/8/2k5/K7/8/8 b - - 0 1",
+    "best_move": "c7b6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_60",
+    "fen": "8/8/8/6P1/8/4b3/K7/3k4 b - - 0 1",
+    "best_move": "e3g5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_61",
+    "fen": "8/1k6/8/8/4K3/2Q2r2/8/8 b - - 0 1",
+    "best_move": "f3c3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_62",
+    "fen": "8/8/k7/8/2K5/8/N7/2n5 b - - 0 1",
+    "best_move": "c1a2",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_63",
+    "fen": "6K1/8/k7/8/8/5p2/6N1/8 b - - 0 1",
+    "best_move": "f3g2",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_64",
+    "fen": "8/8/3n4/5N2/8/1k6/6K1/8 b - - 0 1",
+    "best_move": "d6f5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_65",
+    "fen": "8/8/8/8/8/8/1q1k2K1/3N4 w - - 0 1",
+    "best_move": "d1b2",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_66",
+    "fen": "1n6/8/8/8/8/1K6/6kB/8 w - - 0 1",
+    "best_move": "h2b8",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_67",
+    "fen": "8/q5K1/1P6/8/k7/8/8/8 w - - 0 1",
+    "best_move": "b6a7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_68",
+    "fen": "8/8/8/8/7K/4q3/k2B4/8 w - - 0 1",
+    "best_move": "d2e3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_69",
+    "fen": "8/8/1k6/1n6/P2K4/8/8/8 w - - 0 1",
+    "best_move": "a4b5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_70",
+    "fen": "7Q/1k6/5b2/8/8/K7/8/8 w - - 0 1",
+    "best_move": "h8f6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_71",
+    "fen": "8/8/8/8/4k3/q5B1/8/5K2 b - - 0 1",
+    "best_move": "a3g3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_72",
+    "fen": "3k4/8/8/8/4pQ2/7K/8/8 w - - 0 1",
+    "best_move": "f4e4",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_73",
+    "fen": "R7/8/8/b4k2/8/8/8/5K2 w - - 0 1",
+    "best_move": "a8a5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_74",
+    "fen": "8/1P1k4/1r6/8/8/5K2/8/8 b - - 0 1",
+    "best_move": "b6b7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_75",
+    "fen": "3k4/8/8/3N4/Kr6/8/8/8 w - - 0 1",
+    "best_move": "d5b4",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_76",
+    "fen": "8/2K5/R3q3/8/4k3/8/8/8 w - - 0 1",
+    "best_move": "a6e6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_77",
+    "fen": "8/8/K7/8/8/8/Q7/1bk5 b - - 0 1",
+    "best_move": "b1a2",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_78",
+    "fen": "8/8/8/K7/7n/8/7R/3k4 w - - 0 1",
+    "best_move": "h2h4",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_79",
+    "fen": "8/8/2k5/3r4/1K2P3/8/8/8 w - - 0 1",
+    "best_move": "e4d5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_80",
+    "fen": "8/8/5B2/1k4b1/8/8/8/4K3 w - - 0 1",
+    "best_move": "f6g5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_81",
+    "fen": "8/4p3/5B1k/8/8/8/8/3K4 b - - 0 1",
+    "best_move": "e7f6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_82",
+    "fen": "8/8/5q1K/5R2/8/3k4/8/8 w - - 0 1",
+    "best_move": "f5f6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_83",
+    "fen": "8/6k1/8/8/1Q5n/8/6K1/8 w - - 0 1",
+    "best_move": "b4h4",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_84",
+    "fen": "8/8/8/8/8/1n6/7k/2BK4 b - - 0 1",
+    "best_move": "b3c1",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_85",
+    "fen": "8/2k5/8/8/7n/5B2/1K6/8 b - - 0 1",
+    "best_move": "h4f3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_86",
+    "fen": "8/1p6/6k1/8/8/5Q2/8/2K5 w - - 0 1",
+    "best_move": "f3b7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_87",
+    "fen": "8/3K4/8/8/8/6Q1/1k5b/8 w - - 0 1",
+    "best_move": "g3h2",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_88",
+    "fen": "8/8/8/8/8/1k5K/4n3/2B5 b - - 0 1",
+    "best_move": "e2c1",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_89",
+    "fen": "6K1/4B3/8/6k1/8/4r3/8/8 b - - 0 1",
+    "best_move": "e3e7",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_90",
+    "fen": "8/2K5/8/8/8/4b3/8/k4N2 w - - 0 1",
+    "best_move": "f1e3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_91",
+    "fen": "8/8/k6K/8/8/1r6/1Q6/8 b - - 0 1",
+    "best_move": "b3b2",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_92",
+    "fen": "4K3/1k6/8/8/8/8/5N2/7b w - - 0 1",
+    "best_move": "f2h1",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_93",
+    "fen": "8/3K4/8/5r2/5R2/8/8/2k5 b - - 0 1",
+    "best_move": "f5f4",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_94",
+    "fen": "3K1n2/8/7B/8/6k1/8/8/8 w - - 0 1",
+    "best_move": "h6f8",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_95",
+    "fen": "8/8/8/8/2K5/7p/8/6Nk w - - 0 1",
+    "best_move": "g1h3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_96",
+    "fen": "2K5/8/8/1n6/4k3/B7/8/8 b - - 0 1",
+    "best_move": "b5a3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_97",
+    "fen": "8/8/2R1k3/n7/6K1/8/8/8 b - - 0 1",
+    "best_move": "a5c6",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_98",
+    "fen": "3k4/8/8/2q5/K2B4/8/8/8 w - - 0 1",
+    "best_move": "d4c5",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_99",
+    "fen": "8/3k4/8/K7/1n6/8/2R5/8 b - - 0 1",
+    "best_move": "b4c2",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  },
+  {
+    "game_id": "l1_100",
+    "fen": "8/8/8/8/5k2/2p4K/8/2R5 w - - 0 1",
+    "best_move": "c1c3",
+    "move_number": 1,
+    "side": "black",
+    "opening": "Blindfold Puzzle",
+    "eco": "BLF",
+    "difficulty_band": "Easy",
+    "rough_rating": 800,
+    "_generated": true
+  }
+,
+{"game_id": "fork_1", "fen": "6k1/8/8/8/1P3n2/4K3/8/8 b - - 0 1", "best_move": "f4d5", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_2", "fen": "8/k7/8/8/5B2/5K2/8/6r1 w - - 0 1", "best_move": "f4e3", "move_number": 1, "side": "black", "opening": "Fork: B_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_3", "fen": "5k2/8/5N2/2q5/8/8/8/4K3 w - - 0 1", "best_move": "f6d7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_4", "fen": "8/8/8/8/6n1/5P2/k7/5K2 b - - 0 1", "best_move": "g4h2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_5", "fen": "8/6K1/8/8/8/5N2/2q3k1/8 w - - 0 1", "best_move": "f3e1", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_6", "fen": "4q3/8/8/1k3N2/8/8/1K6/8 w - - 0 1", "best_move": "f5d6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_7", "fen": "8/8/3K4/8/N7/8/4k3/1r6 w - - 0 1", "best_move": "a4c3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_8", "fen": "6K1/8/8/2k5/8/2N5/1b6/8 w - - 0 1", "best_move": "c3a4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_9", "fen": "8/8/8/8/8/K3n3/3Q4/k7 b - - 0 1", "best_move": "e3c4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_10", "fen": "5Q2/8/4kn2/6K1/8/8/8/8 b - - 0 1", "best_move": "f6h7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_11", "fen": "6K1/N3r3/1k6/8/8/8/8/8 w - - 0 1", "best_move": "a7c8", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_12", "fen": "4k3/8/3K4/R1n5/8/8/8/8 b - - 0 1", "best_move": "c5b7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_13", "fen": "3n4/8/8/2Q5/5k2/8/8/4K3 w - - 0 1", "best_move": "c5d6", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_14", "fen": "8/8/1N6/2b5/8/2k5/8/2K5 w - - 0 1", "best_move": "b6a4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_15", "fen": "8/8/4K3/8/1N6/2p5/8/2k5 w - - 0 1", "best_move": "b4a2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_16", "fen": "1N3b2/8/1k6/8/K7/8/8/8 w - - 0 1", "best_move": "b8d7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_17", "fen": "8/8/7k/2K2Q2/8/8/p7/8 w - - 0 1", "best_move": "f5e6", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_18", "fen": "8/8/4k3/8/6K1/3Q1n2/8/8 b - - 0 1", "best_move": "f3e5", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_19", "fen": "8/8/8/R7/3b4/8/8/2k1K3 b - - 0 1", "best_move": "d4c3", "move_number": 1, "side": "black", "opening": "Fork: B_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_20", "fen": "8/8/5n2/6K1/8/6B1/k7/8 b - - 0 1", "best_move": "f6e4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_21", "fen": "8/3K4/8/8/7B/q7/8/k7 b - - 0 1", "best_move": "a3a4", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_22", "fen": "6N1/8/5q2/8/8/6K1/8/3k4 b - - 0 1", "best_move": "f6g5", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_23", "fen": "4k2K/8/8/8/8/8/8/N1b5 b - - 0 1", "best_move": "c1b2", "move_number": 1, "side": "black", "opening": "Fork: B_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_24", "fen": "8/8/8/8/7K/4nk2/8/4R3 b - - 0 1", "best_move": "e3g2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_25", "fen": "8/3K4/3N4/p1k5/8/8/8/8 w - - 0 1", "best_move": "d6b7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_26", "fen": "2k5/8/8/8/8/4r3/2K4B/8 b - - 0 1", "best_move": "e3e2", "move_number": 1, "side": "black", "opening": "Fork: R_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_27", "fen": "8/8/n7/8/8/3K1k2/Q7/8 b - - 0 1", "best_move": "a6b4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_28", "fen": "6k1/8/8/8/8/2n1K3/1B6/8 b - - 0 1", "best_move": "c3d1", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_29", "fen": "8/1B6/6K1/8/8/4k3/8/2q5 b - - 0 1", "best_move": "c1b1", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_30", "fen": "8/6K1/8/3k4/8/8/N1b5/8 w - - 0 1", "best_move": "a2b4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_31", "fen": "8/8/8/7n/8/3K3B/8/3k4 b - - 0 1", "best_move": "h5f4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_32", "fen": "8/7K/8/8/2k5/3N4/8/3q4 w - - 0 1", "best_move": "d3b2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_33", "fen": "8/8/8/2R3n1/8/6K1/k7/8 b - - 0 1", "best_move": "g5e4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_34", "fen": "8/8/8/8/k7/2K1Q3/5n2/8 b - - 0 1", "best_move": "f2d1", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_35", "fen": "K7/8/k1N5/3p4/8/8/8/8 w - - 0 1", "best_move": "c6b4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_36", "fen": "2k5/8/8/8/8/3K3P/4n3/8 b - - 0 1", "best_move": "e2f4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_37", "fen": "5K2/8/5n2/6Q1/8/7k/8/8 b - - 0 1", "best_move": "f6h7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_38", "fen": "8/4k3/1p3N2/8/8/8/6K1/8 w - - 0 1", "best_move": "f6d5", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_39", "fen": "8/8/2r3k1/3N4/5K2/8/8/8 w - - 0 1", "best_move": "d5e7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_40", "fen": "6K1/8/k7/8/8/8/5q2/1B6 b - - 0 1", "best_move": "f2g1", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_41", "fen": "8/3r3k/6N1/8/8/8/8/K7 w - - 0 1", "best_move": "g6f8", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_42", "fen": "2k3N1/8/2K5/5q2/8/8/8/8 w - - 0 1", "best_move": "g8e7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_43", "fen": "8/8/1k5n/4Q3/8/8/8/2K5 w - - 0 1", "best_move": "e5d6", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_44", "fen": "8/K6k/4q1N1/8/8/8/8/8 w - - 0 1", "best_move": "g6f8", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_45", "fen": "K7/8/8/8/8/8/2p3k1/5N2 w - - 0 1", "best_move": "f1e3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_46", "fen": "7k/8/8/3R1K2/2n5/8/8/8 b - - 0 1", "best_move": "c4e3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_47", "fen": "8/1K6/8/6k1/3p4/8/7N/8 w - - 0 1", "best_move": "h2f3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_48", "fen": "K7/8/8/2R5/n6k/8/8/8 w - - 0 1", "best_move": "c5c4", "move_number": 1, "side": "black", "opening": "Fork: R_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_49", "fen": "8/3k4/8/8/1n6/2Q5/8/2K5 b - - 0 1", "best_move": "b4a2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_50", "fen": "8/8/7N/8/8/K6k/8/3q4 b - - 0 1", "best_move": "d1c1", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_51", "fen": "6k1/K3R3/1n6/8/8/8/8/8 b - - 0 1", "best_move": "b6c8", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_52", "fen": "8/1R3n2/4K3/8/7k/8/8/8 b - - 0 1", "best_move": "f7d8", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_53", "fen": "4K3/8/8/1k6/3R4/5q2/8/8 b - - 0 1", "best_move": "f3e3", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_54", "fen": "8/8/5K2/7k/8/4n3/5R2/8 b - - 0 1", "best_move": "e3g4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_55", "fen": "8/2k5/8/2q5/1N6/1K6/8/8 w - - 0 1", "best_move": "b4a6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_56", "fen": "3n4/8/3K4/B7/8/8/8/3k4 b - - 0 1", "best_move": "d8b7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_57", "fen": "5q2/2K1N3/8/8/7k/8/8/8 w - - 0 1", "best_move": "e7g6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_58", "fen": "8/8/8/K7/8/8/1P1n2k1/8 b - - 0 1", "best_move": "d2c4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_59", "fen": "8/7k/3K4/8/6R1/8/8/7b w - - 0 1", "best_move": "g4h4", "move_number": 1, "side": "black", "opening": "Fork: R_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_60", "fen": "k6n/6R1/8/8/8/8/8/7K w - - 0 1", "best_move": "g7g8", "move_number": 1, "side": "black", "opening": "Fork: R_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_61", "fen": "2n3K1/8/1k4B1/8/8/8/8/8 b - - 0 1", "best_move": "c8e7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_62", "fen": "N7/3k4/8/3r4/8/1K6/8/8 w - - 0 1", "best_move": "a8b6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_63", "fen": "8/8/6k1/8/8/2K3B1/8/6n1 b - - 0 1", "best_move": "g1e2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_64", "fen": "6k1/5N2/8/4K3/6b1/8/8/8 w - - 0 1", "best_move": "f7h6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_65", "fen": "8/8/8/2n1K3/8/8/1P6/3k4 b - - 0 1", "best_move": "c5d3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_66", "fen": "8/8/7P/4K3/8/3k4/7n/8 b - - 0 1", "best_move": "h2g4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_67", "fen": "8/K7/8/8/3k4/8/6n1/2Q5 w - - 0 1", "best_move": "c1b2", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_68", "fen": "8/8/8/n7/2k5/8/3K4/R7 b - - 0 1", "best_move": "a5b3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_69", "fen": "8/8/8/8/2k5/5K2/2N5/1r6 w - - 0 1", "best_move": "c2a3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_70", "fen": "8/7N/4k1r1/8/8/7K/8/8 b - - 0 1", "best_move": "g6h6", "move_number": 1, "side": "black", "opening": "Fork: R_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_71", "fen": "8/8/8/k3b3/1N6/8/6K1/8 w - - 0 1", "best_move": "b4c6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_72", "fen": "8/8/8/7k/5K1n/8/8/4R3 b - - 0 1", "best_move": "h4g2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_73", "fen": "8/8/6R1/5n2/8/5K1k/8/8 b - - 0 1", "best_move": "f5h4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_74", "fen": "1q6/8/8/8/K6k/8/8/6R1 b - - 0 1", "best_move": "b8a7", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_75", "fen": "6n1/8/6B1/3k4/8/8/5K2/8 w - - 0 1", "best_move": "g6f7", "move_number": 1, "side": "black", "opening": "Fork: B_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_76", "fen": "8/8/2q3k1/5N2/8/8/1K6/8 w - - 0 1", "best_move": "f5e7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_77", "fen": "5n2/4Q3/8/8/k6K/8/8/8 b - - 0 1", "best_move": "f8g6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_78", "fen": "8/6K1/3k3N/8/3p4/8/8/8 w - - 0 1", "best_move": "h6f5", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_79", "fen": "8/5K2/8/8/3r1k2/8/8/2N5 w - - 0 1", "best_move": "c1e2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_80", "fen": "8/1K3n2/4R3/8/8/7k/8/8 b - - 0 1", "best_move": "f7d8", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_81", "fen": "2n5/8/2K5/5B2/8/8/3k4/8 b - - 0 1", "best_move": "c8e7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_82", "fen": "2k5/8/5K1P/8/8/8/7n/8 b - - 0 1", "best_move": "h2g4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_83", "fen": "8/K7/8/7k/8/n7/6Q1/8 w - - 0 1", "best_move": "g2f3", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_84", "fen": "8/5k2/8/2n5/8/8/1R6/4K3 b - - 0 1", "best_move": "c5d3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_85", "fen": "8/k7/8/4K3/5Q2/8/4p3/8 w - - 0 1", "best_move": "f4e3", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_86", "fen": "k7/8/8/N7/8/3q4/8/4K3 b - - 0 1", "best_move": "d3c3", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_87", "fen": "4K3/8/5N1k/8/8/8/5q2/8 w - - 0 1", "best_move": "f6g4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_88", "fen": "8/8/1K6/8/1n4k1/2Q5/8/8 b - - 0 1", "best_move": "b4d5", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_89", "fen": "4K1k1/8/8/8/3q4/5R2/8/8 b - - 0 1", "best_move": "d4e4", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_90", "fen": "4K3/8/1N6/2k5/8/2r5/8/8 w - - 0 1", "best_move": "b6a4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_91", "fen": "1K6/8/8/8/k1N5/3r4/8/8 w - - 0 1", "best_move": "c4b2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_92", "fen": "5K2/8/5P2/6n1/8/8/6k1/8 b - - 0 1", "best_move": "g5h7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_93", "fen": "1n6/8/8/Q7/3K4/8/4k3/8 b - - 0 1", "best_move": "b8c6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_94", "fen": "8/8/8/8/1k6/N2K4/8/4r3 w - - 0 1", "best_move": "a3c2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_95", "fen": "3K3k/8/3P4/n7/8/8/8/8 b - - 0 1", "best_move": "a5b7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_96", "fen": "8/8/1n6/5k2/2Q5/4K3/8/8 w - - 0 1", "best_move": "c4c5", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_97", "fen": "1k6/8/8/8/3n1K2/8/8/2B5 b - - 0 1", "best_move": "d4e2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_98", "fen": "8/6q1/2N5/8/7k/3K4/8/8 b - - 0 1", "best_move": "g7g6", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_99", "fen": "n1K4k/8/8/8/R7/8/8/8 b - - 0 1", "best_move": "a8b6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_100", "fen": "8/8/3Q4/8/1K6/7k/4n3/8 w - - 0 1", "best_move": "d6e6", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_101", "fen": "8/8/p7/8/N3k3/8/8/6K1 w - - 0 1", "best_move": "a4c5", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_102", "fen": "7K/8/8/8/8/3N4/2r3k1/8 w - - 0 1", "best_move": "d3e1", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_103", "fen": "4K3/8/8/8/6k1/8/8/3r3N w - - 0 1", "best_move": "h1f2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_104", "fen": "8/8/8/2K5/8/1N1q4/k7/8 w - - 0 1", "best_move": "b3c1", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_105", "fen": "8/K7/8/7p/4k3/8/8/6Q1 w - - 0 1", "best_move": "g1h1", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_106", "fen": "8/6K1/8/k7/5b2/2N5/8/8 b - - 0 1", "best_move": "f4e5", "move_number": 1, "side": "black", "opening": "Fork: B_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_107", "fen": "8/1k6/2N1r3/8/8/8/8/6K1 w - - 0 1", "best_move": "c6d8", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_108", "fen": "8/1n6/8/R7/8/1k6/8/2K5 w - - 0 1", "best_move": "a5b5", "move_number": 1, "side": "black", "opening": "Fork: R_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_109", "fen": "7r/2k5/4Q3/8/3K4/8/8/8 w - - 0 1", "best_move": "e6e5", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_110", "fen": "8/8/8/7K/4Q3/8/8/3k3n b - - 0 1", "best_move": "h1g3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_111", "fen": "7K/8/8/8/8/1N3k2/2b5/8 w - - 0 1", "best_move": "b3d4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_112", "fen": "5K1R/8/1k6/4n3/8/8/8/8 b - - 0 1", "best_move": "e5g6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_113", "fen": "8/8/3P4/2n3K1/3k4/8/8/8 b - - 0 1", "best_move": "c5e4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_114", "fen": "8/8/8/4N3/8/4k3/7q/5K2 w - - 0 1", "best_move": "e5g4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_115", "fen": "7k/8/8/8/8/1P6/n3K3/8 b - - 0 1", "best_move": "a2c1", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_116", "fen": "8/8/3N4/p7/8/k7/8/K7 w - - 0 1", "best_move": "d6c4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_117", "fen": "8/8/8/1nk5/8/1R3K2/8/8 b - - 0 1", "best_move": "b5d4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_118", "fen": "8/1N1b4/k7/8/8/8/5K2/8 w - - 0 1", "best_move": "b7c5", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_119", "fen": "8/8/8/8/8/3Q4/8/k2K3n b - - 0 1", "best_move": "h1f2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_120", "fen": "8/8/4k3/5N1r/8/8/8/3K4 w - - 0 1", "best_move": "f5g7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_121", "fen": "8/8/3k4/8/3N4/q7/7K/8 w - - 0 1", "best_move": "d4b5", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_122", "fen": "8/8/5k2/8/2Q5/8/2K5/1n6 b - - 0 1", "best_move": "b1a3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_123", "fen": "5k2/K7/5N2/6b1/8/8/8/8 w - - 0 1", "best_move": "f6h7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_124", "fen": "8/8/4q3/8/4k3/K6N/8/8 w - - 0 1", "best_move": "h3g5", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_125", "fen": "8/8/8/4n3/5K1P/1k6/8/8 b - - 0 1", "best_move": "e5g6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_126", "fen": "8/3q4/5R2/8/8/4K3/8/7k b - - 0 1", "best_move": "d7e7", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_127", "fen": "4r3/8/8/8/2k1N3/8/8/K7 w - - 0 1", "best_move": "e4d6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_128", "fen": "8/8/1K1k4/8/1R3n2/8/8/8 b - - 0 1", "best_move": "f4d5", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_129", "fen": "8/8/8/8/4K3/8/3q4/4N1k1 w - - 0 1", "best_move": "e1f3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_130", "fen": "2R5/7k/2K5/1n6/8/8/8/8 b - - 0 1", "best_move": "b5a7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_131", "fen": "5R2/2n5/8/8/k4K2/8/8/8 b - - 0 1", "best_move": "c7e6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_132", "fen": "8/2K5/8/3r4/8/8/2B1k3/8 b - - 0 1", "best_move": "d5c5", "move_number": 1, "side": "black", "opening": "Fork: R_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_133", "fen": "1k4K1/8/8/5P2/6n1/8/8/8 b - - 0 1", "best_move": "g4h6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_134", "fen": "8/7k/8/8/8/K3n3/8/4Q3 b - - 0 1", "best_move": "e3c2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_135", "fen": "8/8/4k3/1n6/8/1K6/4B3/8 b - - 0 1", "best_move": "b5d4", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_136", "fen": "4N3/5b2/8/5k2/8/8/1K6/8 w - - 0 1", "best_move": "e8d6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_137", "fen": "8/N7/1k1b4/8/8/8/8/4K3 w - - 0 1", "best_move": "a7c8", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_138", "fen": "8/k7/3Q4/K1n5/8/8/8/8 b - - 0 1", "best_move": "c5b7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_139", "fen": "8/6K1/3Q4/8/6k1/6n1/8/8 b - - 0 1", "best_move": "g3f5", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_140", "fen": "8/4R3/8/7q/8/k7/5K2/8 b - - 0 1", "best_move": "h5h4", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_141", "fen": "8/2k5/8/8/2K2N2/4q3/8/8 w - - 0 1", "best_move": "f4d5", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_142", "fen": "8/7k/8/8/2P5/8/2K5/1n6 b - - 0 1", "best_move": "b1a3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_143", "fen": "5K2/8/5B2/1k4n1/8/8/8/8 b - - 0 1", "best_move": "g5h7", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_144", "fen": "8/5k2/8/8/3R4/4n3/8/K7 b - - 0 1", "best_move": "e3c2", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_145", "fen": "8/8/8/8/3Q4/1k6/7n/4K3 b - - 0 1", "best_move": "h2f3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_146", "fen": "8/1Q6/5p2/8/6K1/4k3/8/8 w - - 0 1", "best_move": "b7b6", "move_number": 1, "side": "black", "opening": "Fork: Q_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_147", "fen": "6K1/5n2/8/5R2/8/8/8/2k5 b - - 0 1", "best_move": "f7h6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_148", "fen": "8/3k4/8/1n6/2K5/8/2Q5/8 b - - 0 1", "best_move": "b5a3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_149", "fen": "8/8/8/7p/2K1N3/8/4k3/8 w - - 0 1", "best_move": "e4g3", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true},
+{"game_id": "fork_150", "fen": "5K2/k7/8/6R1/3n4/8/8/8 b - - 0 1", "best_move": "d4e6", "move_number": 1, "side": "black", "opening": "Fork: N_fork", "eco": "BLF", "difficulty_band": "Medium", "rough_rating": 1000, "_generated": true}
+];
+
+let blindSeenIds = new Set();
+
+function pickBlindPuzzle() {
+  // Filter out seen puzzles; if all seen, reset
+  let unseen = BLIND_PUZZLES.filter(p => !blindSeenIds.has(p.game_id));
+  if (unseen.length === 0) {
+    blindSeenIds.clear();
+    unseen = BLIND_PUZZLES.slice();
+  }
+  return unseen[Math.floor(Math.random() * unseen.length)];
+}
+
+function enterBlindMode() {
+  blindfoldMode = true;
+  document.getElementById('board-blindfold-overlay').classList.add('active');
+  document.getElementById('blindfold-panel').classList.add('visible');
+  document.getElementById('difficulty-filter').style.display = 'none';
+
+  // Switch to ghost board rendering
+  renderGhostBoard();
+
+  // Load a random puzzle from the pool
+  const puzzle = pickBlindPuzzle();
+  blindSeenIds.add(puzzle.game_id);
+  loadPuzzle(puzzle);
+  resetBfSelections();
+  buildPieceSelector(currentState);
+}
+
+function exitBlindMode() {
+  blindfoldMode = false;
+  document.getElementById('board-blindfold-overlay').classList.remove('active');
+  document.getElementById('blindfold-panel').classList.remove('visible');
+  document.getElementById('difficulty-filter').style.display = 'flex';
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  // Reset board styling
+  const boardEl = document.getElementById('board');
+  boardEl.style.background = '';
+  boardEl.style.border = '';
+  boardEl.style.position = '';
+  boardEl._ghostCanvas = null;
+  boardEl._ghostCtx = null;
+}
+
+// ── Ghost board renderer ──────────────────────────────────────
+// Replaces the normal board with 4 corner brackets + piece positions as text dots
+function renderGhostBoard() {
+  const boardEl = document.getElementById('board');
+  const size = boardEl.offsetWidth || 480;
+  const corner = Math.round(size * 0.08); // corner bracket length as % of board
+
+  boardEl.innerHTML = '';
+  boardEl.style.background = 'transparent';
+  boardEl.style.border = 'none';
+  boardEl.style.position = 'relative';
+
+  // Draw using a canvas overlay
+  const canvas = document.createElement('canvas');
+  canvas.width  = size;
+  canvas.height = size;
+  canvas.style.cssText = `position:absolute;top:0;left:0;width:${size}px;height:${size}px;`;
+  boardEl.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+  const stroke = 'rgba(200,169,110,0.55)'; // --accent color faint
+  const lw = 2.5;
+  const cl = corner; // corner bracket leg length
+
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = lw;
+  ctx.lineCap = 'square';
+
+  // Helper: draw one corner bracket
+  function bracket(x, y, dx, dy) {
+    ctx.beginPath();
+    ctx.moveTo(x + dx * cl, y);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x, y + dy * cl);
+    ctx.stroke();
+  }
+
+  const m = lw; // margin
+  bracket(m, m, 1, 1);           // top-left
+  bracket(size-m, m, -1, 1);     // top-right
+  bracket(m, size-m, 1, -1);     // bottom-left
+  bracket(size-m, size-m, -1,-1);// bottom-right
+
+// Store canvas ref so we can update piece dots
+  boardEl._ghostCanvas = canvas;
+  boardEl._ghostCtx = ctx;
+  boardEl._ghostSize = size;
+  boardEl._ghostStroke = stroke;
+  boardEl._ghostCorner = corner;
+}
+
+function renderGhostBoardPieces(state) {
+  const boardEl = document.getElementById('board');
+
+  // If ghost canvas not set up yet, set it up first
+  if (!boardEl._ghostCanvas) {
+    renderGhostBoard();
+  }
+
+  const ctx    = boardEl._ghostCtx;
+  const size   = boardEl._ghostSize;
+  const stroke = boardEl._ghostStroke;
+  const corner = boardEl._ghostCorner;
+  const lw     = 2.5;
+
+  // Clear and redraw brackets
+  ctx.clearRect(0, 0, size, size);
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = lw;
+  ctx.lineCap = 'square';
+  const cl = corner;
+  const m = lw;
+
+  function bracket(x, y, dx, dy) {
+    ctx.beginPath();
+    ctx.moveTo(x + dx * cl, y);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x, y + dy * cl);
+    ctx.stroke();
+  }
+  bracket(m, m, 1, 1);
+  bracket(size-m, m, -1, 1);
+  bracket(m, size-m, 1, -1);
+  bracket(size-m, size-m, -1,-1);
+
+  // Draw pieces as small unicode symbols at their positions
+  const sqSize = size / 8;
+  const PIECE_GLYPHS = {
+    K:'♔', Q:'♕', R:'♖', B:'♗', N:'♘', P:'♙',
+    k:'♚', q:'♛', r:'♜', b:'♝', n:'♞', p:'♟',
+  };
+
+  for (let r = 0; r < 8; r++) {
+    for (let f = 0; f < 8; f++) {
+      const piece = state.board[r][f];
+      if (!piece) continue;
+      const glyph = PIECE_GLYPHS[piece] || piece;
+      const isWhite = piece === piece.toUpperCase();
+      const cx = (f + 0.5) * sqSize;
+      const cy = (r + 0.5) * sqSize;
+      const fs = Math.round(sqSize * 0.55);
+      ctx.font = `${fs}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      // White pieces: bright, black pieces: dimmer
+      ctx.fillStyle = isWhite ? 'rgba(240,220,180,0.9)' : 'rgba(80,60,40,0.9)';
+      // Outline for contrast
+      ctx.strokeStyle = isWhite ? 'rgba(0,0,0,0.6)' : 'rgba(240,220,180,0.4)';
+      ctx.lineWidth = 1;
+      ctx.strokeText(glyph, cx, cy);
+      ctx.fillText(glyph, cx, cy);
+    }
+  }
+}
+
+const _origLoadPuzzle = loadPuzzle;
+loadPuzzle = function(puzzle) {
+  _origLoadPuzzle(puzzle);
+  if (blindfoldMode && currentState) {
+    buildPieceSelector(currentState);
+    resetBfSelections();
+  }
+};
+
+// ── Extend mode toggle to handle 3 states ────────────────────
+
+document.getElementById('mode-toggle').addEventListener('click', () => {
+  if (gameMode === 'early') {
+    switchMode('late');
+  } else if (gameMode === 'late') {
+    switchMode('blindfold');
+    enterBlindMode();
+  } else {
+    exitBlindMode();
+    switchMode('early');
+  }
 });
 </script>
 
