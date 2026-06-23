@@ -2397,8 +2397,6 @@ function speakPosition(state) {
   if (!window.speechSynthesis) return;
   initPauseSlider();
 
-  // Cancel anything playing and wait a tick before starting fresh
-  // (avoids Chrome glitch where cancel() + immediate speak() misfires)
   window.speechSynthesis.cancel();
 
   const fileNames = { a:'A', b:'B', c:'C', d:'D', e:'E', f:'F', g:'G', h:'H' };
@@ -2425,8 +2423,6 @@ function speakPosition(state) {
   if (speakBtn) speakBtn.classList.add('speaking');
 
   let cancelled = false;
-
-  // Store a cancel handle so a new call can stop an in-progress reading
   if (window._bfSpeakCancel) window._bfSpeakCancel();
   window._bfSpeakCancel = () => { cancelled = true; };
 
@@ -2448,11 +2444,10 @@ function speakPosition(state) {
       i++;
       const delay = i < phrases.length ? bfPauseMs : 0;
       if (delay > 0) {
-        // Chrome bug: synthesis can pause itself during a setTimeout gap.
-        // Call resume() just before speaking the next phrase.
         setTimeout(() => {
           if (cancelled) return;
-          window.speechSynthesis.resume();
+          // Chrome needs resume() after a gap; iOS ignores it harmlessly
+          if (window.speechSynthesis.paused) window.speechSynthesis.resume();
           speakNext();
         }, delay);
       } else {
@@ -2461,7 +2456,6 @@ function speakPosition(state) {
     };
 
     utt.onerror = (e) => {
-      // 'interrupted' fires when cancel() was called — that's expected, ignore it
       if (e.error === 'interrupted' || e.error === 'canceled') return;
       if (speakBtn) speakBtn.classList.remove('speaking');
     };
@@ -2469,10 +2463,10 @@ function speakPosition(state) {
     window.speechSynthesis.speak(utt);
   }
 
-  // Small delay after cancel() before starting — prevents Chrome from eating first utterance
-  setTimeout(speakNext, 80);
+  // Speak first utterance immediately — iOS requires speech to start synchronously
+  // from a user gesture. Subsequent pieces via onend callbacks are fine async.
+  speakNext();
 }
-
 function buildPositionText(state) {
   const side = state.turn === 'w' ? 'White' : 'Black';
   const files = 'abcdefgh';
